@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-04-25T23:59:00.000Z",
+  "cities": [
+    {
+      "id": "atlanta",
+      "name": "Atlanta",
+      "sections": {
+        "front": [ ... ],
+        "local": [ ... ],
+        "crime": [ ... ],
+        "sports": [ ... ],
+        "business": [ ... ],
+        "opinion": [ ... ],
+        "community": [ ... ]
+      }
+    }
+  ]
+}
