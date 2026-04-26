@@ -1,19 +1,26 @@
-/* GLOBAL */
+/* GLOBAL RESET */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+html, body {
+  height: 100%;
+}
+
 body {
   font-family: "Georgia", serif;
   background: #111;
   color: #111;
+  overflow: hidden;
 }
 
+/* APP WRAPPER */
 #app {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
 }
 
 /* SIDEBAR */
@@ -26,6 +33,7 @@ body {
   flex-direction: column;
   gap: 20px;
   border-right: 1px solid #333;
+  overflow-y: auto;
 }
 
 .logo {
@@ -37,56 +45,34 @@ body {
   border-bottom: 2px solid #444;
 }
 
-.panel h3 {
-  font-size: 14px;
+/* CITY SELECTOR */
+.city-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.city-select-wrapper label {
+  font-size: 12px;
+  color: #aaa;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 8px;
-  color: #aaa;
 }
 
-.list {
-  list-style: none;
-  max-height: 200px;
-  overflow-y: auto;
+#city-select {
+  padding: 8px;
+  background: #111;
+  color: #eee;
   border: 1px solid #333;
   border-radius: 4px;
-}
-
-.list li {
-  padding: 8px 10px;
   font-size: 14px;
-  cursor: pointer;
-  border-bottom: 1px solid #222;
 }
 
-.list li:last-child {
-  border-bottom: none;
-}
-
-.list li:hover {
-  background: #181818;
-}
-
-.list li.active {
-  background: #e53935;
-  color: #fff;
-}
-
+/* SAVED CLIPPINGS */
 .saved-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
-}
-
-.saved-list {
-  flex: 1;
-}
-
-.saved-item {
-  padding: 8px 10px;
-  border-bottom: 1px solid #222;
-  font-size: 12px;
 }
 
 .saved-title {
@@ -98,6 +84,20 @@ body {
   font-size: 11px;
 }
 
+.saved-list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #333;
+  border-radius: 4px;
+}
+
+.saved-item {
+  padding: 8px 10px;
+  border-bottom: 1px solid #222;
+  font-size: 12px;
+  color: #ddd;
+}
+
 /* PAPER SHELL */
 .paper-shell {
   flex: 1;
@@ -106,6 +106,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow: hidden;
 }
 
 /* HEADER */
@@ -115,11 +116,6 @@ body {
   align-items: flex-end;
   border-bottom: 3px solid #000;
   padding-bottom: 10px;
-}
-
-.paper-title {
-  display: flex;
-  flex-direction: column;
 }
 
 .paper-title span:first-child {
@@ -175,6 +171,7 @@ body {
   flex: 1;
   position: relative;
   perspective: 2000px;
+  overflow: hidden;
 }
 
 .page-stack {
@@ -237,31 +234,9 @@ body {
   overflow: hidden;
 }
 
-.article-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-
 .article-header h2 {
   font-size: 15px;
   line-height: 1.2;
-}
-
-.clip-btn {
-  background: #e53935;
-  color: #fff;
-  border: none;
-  font-size: 10px;
-  padding: 4px 8px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  cursor: pointer;
-}
-
-.clip-btn:hover {
-  background: #b71c1c;
 }
 
 .article-meta {
@@ -276,6 +251,23 @@ body {
   line-height: 1.4;
 }
 
+/* IMAGES */
+.article-image {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+/* VIDEO EMBEDS */
+.article-video iframe {
+  width: 100%;
+  height: 180px;
+  border: none;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
 /* RIP EFFECT */
 .article-card.ripped {
   animation: rip 0.4s ease forwards;
@@ -287,15 +279,57 @@ body {
 }
 
 @keyframes rip {
-  0% {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-  }
-  50% {
-    clip-path: polygon(0 0, 100% 0, 100% 90%, 50% 95%, 0 90%);
-  }
-  100% {
-    clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 90%, 0 80%);
-  }
+  0% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  50% { clip-path: polygon(0 0, 100% 0, 100% 90%, 50% 95%, 0 90%); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 90%, 0 80%); }
+}
+
+/* MARKETPLACE */
+.market-listing {
+  padding: 10px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.market-listing strong {
+  font-size: 14px;
+}
+
+.market-listing p {
+  font-size: 12px;
+  color: #444;
+}
+
+/* APPS SECTION */
+.apps-list li {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.apps-list li strong {
+  font-size: 14px;
+}
+
+/* AD BOX */
+.ad-box {
+  padding: 10px;
+  border: 1px solid #ddd;
+  background: #fff7e0;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.ad-box img {
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+/* LEGAL */
+.legal-section {
+  font-size: 11px;
+  color: #555;
 }
 
 /* SCROLLBARS */
