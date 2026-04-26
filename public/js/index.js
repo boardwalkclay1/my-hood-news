@@ -3,10 +3,9 @@
    Fully wired to all-cities.json
    ============================================ */
 
-const DATA_URL = "data/all-cities.json";   // <-- MUST be inside /public/data/
+const DATA_URL = "data/all-cities.json";
 const TOTAL_PAGES = 7;
 
-/* GLOBAL STATE */
 const state = {
   data: null,
   cities: [],
@@ -23,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadData();
 });
 
-/* SET DATE */
+/* DATE */
 function initDate() {
   const el = document.getElementById("paper-date");
   const d = new Date();
