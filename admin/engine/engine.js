@@ -8,11 +8,9 @@ const parser = new Parser();
 const DATA_DIR = path.resolve("./data");
 const OUTPUT_FILE = path.join(DATA_DIR, "all-cities.json");
 
-// tune these if you want
 const MAX_PER_FEED = 15;
 const MAX_PER_SECTION = 25;
 
-// 50 cities (can expand later)
 const CITIES = [
   "Atlanta", "Detroit", "Chicago", "Houston", "Los Angeles",
   "Philadelphia", "Baltimore", "Oakland", "Memphis", "New Orleans",
@@ -26,20 +24,26 @@ const CITIES = [
   "Fresno", "Compton", "Inglewood", "East St. Louis", "Paterson"
 ];
 
-// sections we care about in the JSON
+// sections we output
 const SECTIONS = [
   "front",
   "local",
   "crime",
-  "jobs",
   "events",
   "community_help",
   "business",
   "sports",
-  "opinion"
+  "opinion",
+  "feature",
+  "technology",
+  "jobs",
+  "cars_trucks",
+  "apps",
+  "ad_slot",
+  "legal"
 ];
 
-// for each section, define one or more RSS search patterns
+// search sources per section
 const SECTION_SOURCES = {
   front: [
     q => googleNewsUrl(`${q} breaking news`),
@@ -52,11 +56,6 @@ const SECTION_SOURCES = {
   crime: [
     q => googleNewsUrl(`${q} crime`),
     q => googleNewsUrl(`${q} shooting OR homicide OR robbery`)
-  ],
-  jobs: [
-    q => googleNewsUrl(`${q} jobs`),
-    q => googleNewsUrl(`${q} hiring`),
-    q => googleNewsUrl(`${q} employment opportunities`)
   ],
   events: [
     q => googleNewsUrl(`${q} events`),
@@ -81,29 +80,46 @@ const SECTION_SOURCES = {
     q => googleNewsUrl(`${q} opinion`),
     q => googleNewsUrl(`${q} editorial`),
     q => googleNewsUrl(`${q} column`)
+  ],
+  feature: [
+    q => googleNewsUrl(`${q} human interest`),
+    q => googleNewsUrl(`${q} community profile`),
+    q => googleNewsUrl(`${q} spotlight story`)
+  ],
+  technology: [
+    q => googleNewsUrl(`${q} technology`),
+    q => googleNewsUrl(`${q} tech startups`),
+    q => googleNewsUrl(`${q} innovation`)
+  ],
+  jobs: [
+    q => googleNewsUrl(`${q} jobs`),
+    q => googleNewsUrl(`${q} hiring`),
+    q => googleNewsUrl(`${q} employment opportunities`)
+  ],
+  cars_trucks: [
+    q => googleNewsUrl(`${q} cars for sale`),
+    q => googleNewsUrl(`${q} used trucks for sale`)
   ]
 };
 
-// ---------- URL HELPERS ----------
 function googleNewsUrl(query) {
   return `https://news.google.com/rss/search?q=${encodeURIComponent(
     query
   )}&hl=en-US&gl=US&ceid=US:en`;
 }
 
-// ---------- CORE ENGINE ----------
+// ---------- CORE RUN ----------
 async function run() {
   ensureDataDir();
 
   console.log("🚀 HOOD NEWS ENGINE — START");
-  const startedAt = new Date();
+  const startedAt = Date.now();
 
-  const cityPromises = CITIES.map(cityName => buildCityRecord(cityName));
-  const citiesData = await Promise.all(cityPromises);
+  const citiesData = await Promise.all(CITIES.map(buildCityRecord));
 
   const payload = {
     generatedAt: new Date().toISOString(),
-    runtimeSeconds: ((Date.now() - startedAt.getTime()) / 1000).toFixed(1),
+    runtimeSeconds: ((Date.now() - startedAt) / 1000).toFixed(1),
     cityCount: citiesData.length,
     sections: SECTIONS,
     cities: citiesData
@@ -119,60 +135,126 @@ function ensureDataDir() {
   }
 }
 
-// ---------- CITY BUILDER ----------
+// ---------- CITY ----------
 async function buildCityRecord(cityName) {
   const cityId = cityName.toLowerCase().replace(/\s+/g, "-");
   console.log(`\n🔍 City: ${cityName}`);
 
-  const sections = {};
-  const sectionStats = {};
+  const baseSections = await buildNewsSections(cityName);
 
-  for (const section of SECTIONS) {
-    const articles = await buildSection(cityName, section);
-    sections[section] = articles;
-    sectionStats[section] = articles.length;
-  }
+  // front page: pick main + runner_up + previews
+  const frontArticles = baseSections.front || [];
+  const main = frontArticles[0] || null;
+  const runner = frontArticles[1] || null;
+
+  const jobsFull = baseSections.jobs || [];
+  const jobsPreview = jobsFull.slice(0, 4);
+
+  const eventsFull = baseSections.events || [];
+  const eventsPreview = eventsFull.slice(0, 3);
+
+  const sections = {
+    front: {
+      main,
+      runner_up: runner,
+      preview_jobs: jobsPreview,
+      preview_events: eventsPreview
+    },
+    local: wrapSection(baseSections.local),
+    crime: wrapSection(baseSections.crime),
+    events: wrapSection(baseSections.events),
+    community_help: wrapSection(baseSections.community_help),
+    business: wrapSection(baseSections.business),
+    sports: wrapSection(baseSections.sports),
+    opinion: wrapSection(baseSections.opinion),
+    feature: wrapSection(baseSections.feature),
+    technology: {
+      enabled: false,
+      articles: baseSections.technology || [],
+      image: firstImage(baseSections.technology)
+    },
+    jobs: {
+      preview: jobsPreview,
+      full: jobsFull
+    },
+    cars_trucks: {
+      listings: baseSections.cars_trucks || []
+    },
+    apps: {
+      enabled: false,
+      items: []
+    },
+    ad_slot: {
+      enabled: false,
+      content: {
+        title: "",
+        image: "",
+        link: ""
+      }
+    },
+    legal: {
+      sources: [
+        "Google News",
+        "Original publishers linked in each article"
+      ],
+      disclaimer:
+        "All headlines and snippets link to original sources. Images and videos are embedded via source URLs only."
+    }
+  };
 
   return {
     id: cityId,
     name: cityName,
-    sections,
-    stats: sectionStats
+    sections
   };
 }
 
-// ---------- SECTION BUILDER ----------
-async function buildSection(cityName, section) {
-  const sources = SECTION_SOURCES[section] || [];
-  if (!sources.length) return [];
-
-  const queryBase = cityName;
-  const urls = sources.map(fn => fn(queryBase));
-
-  const allItems = [];
-  for (const url of urls) {
-    const items = await fetchRss(url, cityName, section);
-    allItems.push(...items);
-  }
-
-  const deduped = dedupeArticles(allItems);
-  const limited = deduped.slice(0, MAX_PER_SECTION);
-
-  return limited;
+function wrapSection(articles) {
+  return {
+    articles: articles || [],
+    image: firstImage(articles)
+  };
 }
 
-// ---------- RSS FETCH ----------
+function firstImage(articles) {
+  if (!articles || !articles.length) return "";
+  const withImg = articles.find(a => a.image);
+  return withImg ? withImg.image : "";
+}
+
+// ---------- SECTION SCRAPING ----------
+async function buildNewsSections(cityName) {
+  const out = {};
+  const base = cityName;
+
+  for (const section of Object.keys(SECTION_SOURCES)) {
+    const urls = SECTION_SOURCES[section].map(fn => fn(base));
+    const allItems = [];
+
+    for (const url of urls) {
+      const items = await fetchRss(url, cityName, section);
+      allItems.push(...items);
+    }
+
+    const deduped = dedupeArticles(allItems).slice(0, MAX_PER_SECTION);
+    out[section] = deduped;
+  }
+
+  return out;
+}
+
 async function fetchRss(url, cityName, section) {
   try {
     const feed = await parser.parseURL(url);
-    return (feed.items || []).slice(0, MAX_PER_FEED).map(item => normalizeArticle(item, cityName, section));
+    return (feed.items || [])
+      .slice(0, MAX_PER_FEED)
+      .map(item => normalizeArticle(item, cityName, section));
   } catch (e) {
     console.error(`   ❌ RSS fail [${cityName} / ${section}]`, e.message);
     return [];
   }
 }
 
-// ---------- NORMALIZATION ----------
 function normalizeArticle(item, cityName, section) {
   const title = (item.title || "").trim();
   const snippet = (item.contentSnippet || "").trim();
@@ -183,6 +265,8 @@ function normalizeArticle(item, cityName, section) {
     title,
     snippet,
     link,
+    image: null,   // placeholder for OG:image URL if you add HTML scraping later
+    video: null,   // placeholder for video embed URL
     source: "Google News",
     city: cityName,
     section,
@@ -190,7 +274,6 @@ function normalizeArticle(item, cityName, section) {
   };
 }
 
-// simple hash to generate stable IDs
 function hashId(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -199,7 +282,6 @@ function hashId(str) {
   return `a${Math.abs(hash)}`;
 }
 
-// ---------- DEDUPE ----------
 function dedupeArticles(items) {
   const seen = new Set();
   const out = [];
