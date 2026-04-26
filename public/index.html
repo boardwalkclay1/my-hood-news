@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hood News — Digital Edition</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- LEFT: CITY / CATEGORY / SAVED -->
+    <aside class="sidebar">
+      <div class="logo">HOOD NEWS</div>
+
+      <div class="panel">
+        <h3>Cities</h3>
+        <ul id="city-list" class="list"></ul>
+      </div>
+
+      <div class="panel">
+        <h3>Sections</h3>
+        <ul id="section-list" class="list">
+          <li data-section="front">Front Page</li>
+          <li data-section="local">Local</li>
+          <li data-section="crime">Crime</li>
+          <li data-section="sports">Sports</li>
+          <li data-section="business">Business</li>
+          <li data-section="opinion">Opinion</li>
+          <li data-section="community">Community</li>
+        </ul>
+      </div>
+
+      <div class="panel saved-panel">
+        <h3>Saved Clips</h3>
+        <ul id="saved-list" class="list saved-list"></ul>
+      </div>
+    </aside>
+
+    <!-- RIGHT: NEWSPAPER VIEWER -->
+    <main class="paper-shell">
+      <header class="paper-header">
+        <div class="paper-title">
+          <span id="paper-city">Select a City</span>
+          <span class="paper-subtitle">Daily Hood Edition</span>
+        </div>
+        <div class="paper-meta">
+          <span id="paper-date"></span>
+          <span>Price: 70¢</span>
+          <span>Vol. 1 — No. 1</span>
+        </div>
+      </header>
+
+      <!-- PAGE CONTROLS -->
+      <div class="page-controls">
+        <button id="prev-page" class="page-btn">&laquo; Prev</button>
+        <div class="page-indicator">
+          Page <span id="page-current">1</span> / <span id="page-total">7</span>
+        </div>
+        <button id="next-page" class="page-btn">Next &raquo;</button>
+      </div>
+
+      <!-- PAPER PAGES -->
+      <section class="paper-view">
+        <div id="page-stack" class="page-stack">
+          <!-- Pages will be injected here -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // ---------- CONFIG ----------
+    const TOTAL_PAGES = 7;
+    const SECTIONS = ["front", "local", "crime", "sports", "business", "opinion", "community"];
+
+    // ---------- STATE ----------
+    const state = {
+      cities: [],          // [{ id, name }]
+      currentCity: null,   // city id
+      currentSection: "front",
+      currentPage: 1,
+      data: null,          // full JSON for all cities
+      saved: []            // [{ id, title, city, section }]
+    };
+
+    // ---------- INIT ----------
+    document.addEventListener("DOMContentLoaded", () => {
+      initDate();
+      loadSaved();
+      loadCities();
+      bindUI();
+      buildPagesShell();
+    });
+
+    function initDate() {
+      const el = document.getElementById("paper-date");
+      const d = new Date();
+      el.textContent = d.toLocaleDateString(undefined, {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+
+    function bindUI() {
+      document.getElementById("prev-page").addEventListener("click", () => changePage(-1));
+      document.getElementById("next-page").addEventListener("click", () => changePage(1));
+
+      document.getElementById("section-list").addEventListener("click", (e) => {
+        const li = e.target.closest("li");
+        if (!li) return;
+        state.currentSection = li.dataset.section;
+        highlightSection();
+        renderCurrentPage();
+      });
+    }
+
+    // ---------- CITY / DATA LOADING ----------
+    async function loadCities() {
+      // Expecting a file like public/cities.json later
+      // For now, mock 5 cities so UI works without backend
+      state.cities = [
+        { id: "atlanta", name: "Atlanta" },
+        { id: "detroit", name: "Detroit" },
+        { id: "chicago", name: "Chicago" },
+        { id: "houston", name: "Houston" },
+        { id: "los-angeles", name: "Los Angeles" }
+      ];
+      renderCityList();
+    }
+
+    function renderCityList() {
+      const ul = document.getElementById("city-list");
+      ul.innerHTML = "";
+      state.cities.forEach((c) => {
+        const li = document.createElement("li");
+        li.textContent = c.name;
+        li.dataset.city = c.id;
+        li.addEventListener("click", () => selectCity(c.id, c.name));
+        ul.appendChild(li);
+      });
+    }
+
+    function selectCity(id, name) {
+      state.currentCity = id;
+      state.currentPage = 1;
+      document.getElementById("paper-city").textContent = name.toUpperCase();
+      highlightCity();
+      renderCurrentPage();
+    }
+
+    function highlightCity() {
+      const items = document.querySelectorAll("#city-list li");
+      items.forEach((li) => {
+        li.classList.toggle("active", li.dataset.city === state.currentCity);
+      });
+    }
+
+    function highlightSection() {
+      const items = document.querySelectorAll("#section-list li");
+      items.forEach((li) => {
+        li.classList.toggle("active", li.dataset.section === state.currentSection);
+      });
+    }
+
+    // ---------- PAGE STACK ----------
+    function buildPagesShell() {
+      const stack = document.getElementById("page-stack");
+      stack.innerHTML = "";
+      for (let i = 1; i <= TOTAL_PAGES; i++) {
+        const page = document.createElement("article");
+        page.className = "paper-page";
+        page.dataset.page = i;
+        page.innerHTML = `
+          <div class="page-inner">
+            <div class="page-label">Page ${i}</div>
+            <div class="page-content" data-page-content="${i}">
+              <!-- Articles injected here -->
+            </div>
+          </div>
+        `;
+        stack.appendChild(page);
+      }
+      document.getElementById("page-total").textContent = TOTAL_PAGES;
+      highlightCurrentPage();
+    }
+
+    function changePage(delta) {
+      const next = state.currentPage + delta;
+      if (next < 1 || next > TOTAL_PAGES) return;
+      state.currentPage = next;
+      highlightCurrentPage();
+      renderCurrentPage();
+    }
+
+    function highlightCurrentPage() {
+      document.getElementById("page-current").textContent = state.currentPage;
+      const pages = document.querySelectorAll(".paper-page");
+      pages.forEach((p) => {
+        p.classList.toggle("active", Number(p.dataset.page) === state.currentPage);
+      });
+    }
+
+    // ---------- RENDERING ARTICLES ----------
+    function renderCurrentPage() {
+      const pageContent = document.querySelector(
+        `.page-content[data-page-content="${state.currentPage}"]`
+      );
+      if (!pageContent) return;
+
+      // Placeholder until real JSON is wired:
+      // We simulate 4 articles per page per section per city.
+      const cityName =
+        state.cities.find((c) => c.id === state.currentCity)?.name || "Select a City";
+      const sectionLabel = state.currentSection.toUpperCase();
+
+      pageContent.innerHTML = "";
+
+      for (let i = 1; i <= 4; i++) {
+        const id = `${state.currentCity || "none"}-${state.currentSection}-${state.currentPage}-${i}`;
+        const article = document.createElement("div");
+        article.className = "article-card";
+        article.innerHTML = `
+          <div class="article-header">
+            <h2>${sectionLabel} — Sample Story ${i}</h2>
+            <button class="clip-btn" data-clip-id="${id}">Rip & Save</button>
+          </div>
+          <div class="article-meta">
+            <span>${cityName}</span>
+            <span>Page ${state.currentPage}</span>
+          </div>
+          <p class="article-body">
+            This is placeholder copy for ${cityName} in the ${sectionLabel} section.
+            When wired to real JSON, this will show real scraped content from the Hood News engine.
+          </p>
+        `;
+        pageContent.appendChild(article);
+      }
+
+      bindClipButtons();
+    }
+
+    // ---------- CLIPPING / SAVED ARTICLES ----------
+    function bindClipButtons() {
+      document.querySelectorAll(".clip-btn").forEach((btn) => {
+        btn.onclick = () => {
+          const id = btn.dataset.clipId;
+          const card = btn.closest(".article-card");
+          if (!card) return;
+
+          const title = card.querySelector("h2")?.textContent || "Untitled";
+          const cityName =
+            state.cities.find((c) => c.id === state.currentCity)?.name || "Unknown City";
+
+          saveClip({
+            id,
+            title,
+            city: cityName,
+            section: state.currentSection,
+            page: state.currentPage
+          });
+
+          applyRipEffect(card);
+        };
+      });
+    }
+
+    function saveClip(clip) {
+      if (!state.saved.find((c) => c.id === clip.id)) {
+        state.saved.push(clip);
+        persistSaved();
+        renderSaved();
+      }
+    }
+
+    function persistSaved() {
+      try {
+        localStorage.setItem("hoodNewsSaved", JSON.stringify(state.saved));
+      } catch (e) {}
+    }
+
+    function loadSaved() {
+      try {
+        const raw = localStorage.getItem("hoodNewsSaved");
+        if (raw) state.saved = JSON.parse(raw);
+      } catch (e) {
+        state.saved = [];
+      }
+      renderSaved();
+    }
+
+    function renderSaved() {
+      const ul = document.getElementById("saved-list");
+      ul.innerHTML = "";
+      state.saved.forEach((clip) => {
+        const li = document.createElement("li");
+        li.className = "saved-item";
+        li.innerHTML = `
+          <div class="saved-title">${clip.title}</div>
+          <div class="saved-meta">${clip.city} — ${clip.section.toUpperCase()} — Page ${clip.page}</div>
+        `;
+        ul.appendChild(li);
+      });
+    }
+
+    function applyRipEffect(card) {
+      card.classList.add("ripped");
+      setTimeout(() => {
+        card.classList.add("ripped-removed");
+      }, 400);
+    }
+  </script>
+</body>
+</html>
