@@ -1,0 +1,78 @@
+/* GLOBAL */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: #111;
+  color: #eee;
+}
+
+#admin-app {
+  display: flex;
+  height: 100vh;
+}
+
+/* SIDEBAR */
+.admin-sidebar {
+  width: 260px;
+  background: #0d0d0d;
+  border-right: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  gap: 20px;
+}
+
+.admin-logo {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #333;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-nav button {
+  padding: 12px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #eee;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.admin-nav button:hover {
+  background: #e53935;
+  border-color: #e53935;
+}
+
+.admin-nav button.active {
+  background: #e53935;
+  border-color: #e53935;
+}
+
+/* MAIN CONTENT */
+#admin-content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.placeholder {
+  font-size: 18px;
+  opacity: 0.5;
+  text-align: center;
+  margin-top: 100px;
+}
