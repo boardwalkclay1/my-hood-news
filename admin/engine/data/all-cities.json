@@ -1,17 +1,58 @@
 {
-  "generatedAt": "2026-04-25T23:59:00.000Z",
+  "generatedAt": "2026-04-25T23:59:00Z",
   "cities": [
     {
-      "id": "atlanta",
-      "name": "Atlanta",
+      "id": "detroit",
+      "name": "Detroit",
       "sections": {
-        "front": [ ... ],
-        "local": [ ... ],
-        "crime": [ ... ],
-        "sports": [ ... ],
-        "business": [ ... ],
-        "opinion": [ ... ],
-        "community": [ ... ]
+        "front": {
+          "main": { "title": "", "snippet": "", "image": "", "link": "" },
+          "runner_up": { "title": "", "snippet": "", "image": "", "link": "" },
+          "preview_jobs": [],
+          "preview_events": []
+        },
+        "local": { "articles": [], "image": "" },
+        "crime": { "articles": [], "image": "" },
+        "events": { "articles": [], "image": "" },
+        "community_help": { "articles": [], "image": "" },
+        "business": { "articles": [], "image": "" },
+        "sports": { "articles": [], "image": "" },
+        "opinion": { "articles": [], "image": "" },
+        "feature": { "articles": [], "image": "" },
+
+        "technology": {
+          "enabled": false,
+          "articles": [],
+          "image": ""
+        },
+
+        "jobs": {
+          "preview": [],
+          "full": []
+        },
+
+        "cars_trucks": {
+          "listings": []
+        },
+
+        "apps": {
+          "enabled": false,
+          "items": []
+        },
+
+        "ad_slot": {
+          "enabled": false,
+          "content": {
+            "title": "",
+            "image": "",
+            "link": ""
+          }
+        },
+
+        "legal": {
+          "sources": [],
+          "disclaimer": ""
+        }
       }
     }
   ]
