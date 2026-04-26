@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hood News Admin</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <div id="admin-app">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="admin-sidebar">
+      <div class="admin-logo">HOOD NEWS — ADMIN</div>
+
+      <nav class="admin-nav">
+        <button data-module="dashboard">Dashboard</button>
+        <button data-module="cities">Cities</button>
+        <button data-module="editor">Editor</button>
+        <button data-module="preview">Preview</button>
+        <button data-module="settings">Settings</button>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main id="admin-content">
+      <!-- Modules will inject content here -->
+      <div class="placeholder">
+        Select a module from the left to begin.
+      </div>
+    </main>
+
+  </div>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
