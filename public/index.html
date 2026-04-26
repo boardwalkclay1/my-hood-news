@@ -1,27 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Hood News — Digital Edition</title>
 
-  <!-- FAVICON -->
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/favicon.png" />
 
-  <!-- SOCIAL PREVIEW (OpenGraph) -->
   <meta property="og:title" content="Hood News — Digital Edition" />
-  <meta property="og:description" content="Your city's real-time digital newspaper. Local stories, crime, jobs, events, and more — all in one place." />
+  <meta property="og:description" content="Your city's real-time digital newspaper. Local stories, crime, jobs, events, and more." />
   <meta property="og:image" content="assets/social-preview.png" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://yourdomain.com" />
 
-  <!-- TWITTER CARD -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Hood News — Digital Edition" />
-  <meta name="twitter:description" content="Your city's real-time digital newspaper. Local stories, crime, jobs, events, and more — all in one place." />
+  <meta name="twitter:description" content="Your city's real-time digital newspaper. Local stories, crime, jobs, events, and more." />
   <meta name="twitter:image" content="assets/social-preview.png" />
 
-  <!-- MOBILE -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
+<body>
+  <div id="app">
+    <!-- LEFT: CITY + SAVED -->
+    <aside class="sidebar">
+      <div class="logo">HOOD NEWS</div>
+
+      <div class="panel">
+        <h3>Cities</h3>
+        <ul id="city-list" class="list"></ul>
+      </div>
+
+      <div class="panel saved-panel">
+        <h3>Saved Clips</h3>
+        <ul id="saved-list" class="saved-list"></ul>
+      </div>
+    </aside>
+
+    <!-- RIGHT: NEWSPAPER -->
+    <main class="paper-shell">
+      <header class="paper-header">
+        <div class="paper-title">
+          <span id="paper-city">Select a City</span>
+          <span class="paper-subtitle">Daily Hood Edition</span>
+        </div>
+        <div class="paper-meta">
+          <span id="paper-date"></span>
+          <span>Price: 70¢</span>
+          <span>Vol. 1 — No. 1</span>
+        </div>
+      </header>
+
+      <div class="page-controls">
+        <button id="prev-page" class="page-btn">&laquo; Prev</button>
+        <div class="page-indicator">
+          Page <span id="page-current">1</span> / <span id="page-total">7</span>
+        </div>
+        <button id="next-page" class="page-btn">Next &raquo;</button>
+      </div>
+
+      <section class="paper-view">
+        <div id="page-stack"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/index.js"></script>
+</body>
+</html>
